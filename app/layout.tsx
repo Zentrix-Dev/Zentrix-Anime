@@ -1,32 +1,16 @@
 // app/layout.tsx
-
 import type { Metadata } from "next";
 import { Rajdhani, DM_Sans, Bebas_Neue, Noto_Sans_JP } from "next/font/google";
+import { Navbar } from "@/components/ui/Navbar";
+import { Footer } from "@/components/ui/Footer";
 import { CookieConsent } from "@/components/ui/CookieConsent";
 import "./globals.css";
 
 // Configure Google Fonts
-const rajdhani = Rajdhani({ 
-  subsets: ["latin"], 
-  weight: ["500", "600", "700"],
-  variable: '--font-rajdhani'
-});
-
-const dmSans = DM_Sans({ 
-  subsets: ["latin"],
-  variable: '--font-dm-sans'
-});
-
-const bebasNeue = Bebas_Neue({ 
-  subsets: ["latin"], 
-  weight: ["400"],
-  variable: '--font-bebas-neue'
-});
-
-const notoSansJP = Noto_Sans_JP({ 
-  subsets: ["latin"], // Includes Japanese characters automatically
-  variable: '--font-noto-sans-jp'
-});
+const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["500", "600", "700"], variable: '--font-rajdhani' });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: '--font-dm-sans' });
+const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: ["400"], variable: '--font-bebas-neue' });
+const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], variable: '--font-noto-sans-jp' });
 
 export const metadata: Metadata = {
   title: "ZentrixAnime — Neo Tokyo Streaming",
@@ -40,17 +24,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${rajdhani.variable} ${dmSans.variable} ${bebasNeue.variable} ${notoSansJP.variable} font-body text-text-primary bg-primary antialiased relative min-h-screen`}>
+      <body className={`${rajdhani.variable} ${dmSans.variable} ${bebasNeue.variable} ${notoSansJP.variable} font-body text-text-primary bg-primary antialiased relative min-h-screen flex flex-col`}>
         {/* Animated Background Layers */}
         <div className="global-bg" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
         
-        {/* Main Application */}
-        <main className="relative z-10 flex flex-col min-h-screen">
+        {/* Global Navbar */}
+        <Navbar />
+
+        {/* Main Application Content */}
+        <main className="relative z-10 flex-1 flex flex-col">
           {children}
         </main>
 
-        {/* Global UI Overlays */}
+        {/* Global Footer & Overlays */}
+        <Footer />
         <CookieConsent />
       </body>
     </html>
