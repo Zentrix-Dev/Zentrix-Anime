@@ -30,8 +30,8 @@ export const VIDEO_SERVERS: VideoServer[] = [
     id: 'megaplay-mal',
     name: 'MegaPlay (MAL)',
     supports: ['sub', 'dub'],
-    buildUrl: ({ malId, episode, language }) =>
-      // Requires malId, fallback to AniList ID if missing (might fail but prevents crash)
+    // FIX: Added anilistId to the destructured parameters here
+    buildUrl: ({ malId, anilistId, episode, language }) =>
       `https://megaplay.buzz/stream/mal/${malId || anilistId}/${episode}/${language}`,
   },
   {
@@ -39,8 +39,6 @@ export const VIDEO_SERVERS: VideoServer[] = [
     name: '4Animo HD',
     supports: ['sub', 'dub'],
     buildUrl: ({ fourAnimoEpId, language }) =>
-      // Note: 4Animo typically requires their specific DB ID. 
-      // In a real scenario, you'd fetch an ID mapping API. We use a placeholder logic here.
       `https://cdn.4animo.xyz/api/embed/hd-1/${fourAnimoEpId || 'unknown'}/${language}?k=1&autoPlay=1&skipIntro=1`,
   },
   {
