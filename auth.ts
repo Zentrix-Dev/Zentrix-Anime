@@ -1,27 +1,22 @@
 // auth.ts
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { db } from "@/lib/db";
-import { compare } from "bcryptjs"; // Make sure to npm install bcryptjs and @types/bcryptjs
+import NextAuth from "next-auth"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { db } from "@/lib/db"
+import CredentialsProvider from "next-auth/providers/credentials"
+// import GoogleProvider from "next-auth/providers/google" // Uncomment when ready
+import bcrypt from "bcryptjs"
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" }, // Required for Credentials provider
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    // }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -37,37 +32,45 @@ export const {
           where: { email: credentials.email as string }
         });
 
-        if (!user || !user.passwordHash) {
-          return null; // User not found or uses OAuth
-        }
-
-        const isValid = await compare(credentials.password as string, user.passwordHash);
-
-        if (!isValid) {
+        // If no user exists, or they signed up with Google (meaning they have no password)
+        if (!user || !user.password) {
           return null;
         }
 
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          return null;
+        }
+
+        // Return user object (stripping out the password for security)
         return {
           id: user.id,
+          name: user.name,
           email: user.email,
-          name: user.username,
-          image: user.avatar,
+          image: user.image,
         };
       }
-    })
+    }),
   ],
   callbacks: {
+    // 1. Attach the user ID to the JWT token on initial login
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
+    // 2. Pass the ID from the JWT token into the client-side session
     async session({ session, token }) {
-      if (token && session.user) {
+      if (session.user && token.id) {
         session.user.id = token.id as string;
       }
       return session;
     }
   }
-});
+})
+      
